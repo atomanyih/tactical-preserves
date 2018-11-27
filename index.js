@@ -16,24 +16,41 @@ const image = new Image();
 
 function animate(fn) {
   function loop(t) {
-    fn(t);
     requestAnimationFrame(loop)
+    fn(t);
   }
 
   requestAnimationFrame(loop);
 }
 
-function render({angleOffset}) {
+function mouseReactive(fn) {
+  let mouseX = 0;
+  let mouseY = 0;
+
+  document.addEventListener('mousemove', (event) => {
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+  });
+
+  return function (props) {
+    return {
+      ...props,
+      ...fn({mouseX, mouseY}, props)
+    }
+  }
+}
+
+function render({angleOffset, centerX, centerY}) {
   ctx.drawImage(image, 0, 0);
 
   for (let i = 0; i < NUM_LAYERS; i++) {
     ctx.save();
     ctx.beginPath();
-    ctx.arc(CENTER_X, CENTER_Y, OUTER_RADIUS - i * layerWidth, 0, Math.PI * 2, true);
+    ctx.arc(centerX, centerY, OUTER_RADIUS - i * layerWidth, 0, Math.PI * 2, true);
     ctx.clip();
-    ctx.translate(CENTER_X, CENTER_Y);
+    ctx.translate(centerX, centerY);
     ctx.rotate((i + 1) * angleOffset * Math.PI / 180);
-    ctx.translate(-CENTER_X, -CENTER_Y);
+    ctx.translate(-centerX, -centerY);
     ctx.drawImage(image, 0, 0);
     ctx.restore();
   }
@@ -47,6 +64,10 @@ image.addEventListener('load', () => {
       t => ({
         angleOffset: (1 * t / 1000) % 360
       }),
+      mouseReactive(({mouseX, mouseY}) => ({
+        centerX: mouseX,
+        centerY: mouseY
+      })),
       render
     )
   );
