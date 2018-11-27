@@ -1,11 +1,11 @@
-const CENTER_X = 430;
-const CENTER_Y = 200;
-const OUTER_RADIUS = 200;
+const CENTER_X = 1661;
+const CENTER_Y = 344;
+// const OUTER_RADIUS = 11/2;
 // const NUM_LAYERS = 5;
-const NUM_LAYERS = 20;
-const INNER_RADIUS = 100;
+const NUM_LAYERS = 4;
+const INNER_RADIUS = 750 / 2;
 const ANGLE_OFFSET = 5;
-const layerWidth = (OUTER_RADIUS - INNER_RADIUS) / NUM_LAYERS
+const layerWidth = 63//(OUTER_RADIUS - INNER_RADIUS) / NUM_LAYERS * 2
 
 const flow = (...fns) => fns.reduceRight((f, g) => (...args) => f(g(...args)));
 
@@ -41,12 +41,12 @@ function mouseReactive(fn) {
 }
 
 function render({angleOffset, centerX, centerY}) {
-  ctx.drawImage(image, 0, 0);
+  // ctx.drawImage(image, 0, 0);
 
   for (let i = 0; i < NUM_LAYERS; i++) {
     ctx.save();
     ctx.beginPath();
-    ctx.arc(centerX, centerY, OUTER_RADIUS - i * layerWidth, 0, Math.PI * 2, true);
+    ctx.arc(centerX, centerY, INNER_RADIUS + (NUM_LAYERS - i) * layerWidth, 0, Math.PI * 2, true);
     ctx.clip();
     ctx.translate(centerX, centerY);
     ctx.rotate((i + 1) * angleOffset * Math.PI / 180);
@@ -59,17 +59,20 @@ function render({angleOffset, centerX, centerY}) {
 image.addEventListener('load', () => {
   canvas.width = image.width;
   canvas.height = image.height;
+  ctx.drawImage(image, 0, 0);
+
   animate(
     flow(
       t => ({
-        angleOffset: (1 * t / 1000) % 360
+        angleOffset: Math.sin(t / 30000 * Math.PI * 2),
+        centerX: CENTER_X,
+        centerY: CENTER_Y,
       }),
-      mouseReactive(({mouseX, mouseY}) => ({
-        centerX: mouseX,
-        centerY: mouseY
-      })),
+      // mouseReactive(({mouseX, mouseY}, {angleOffset}) => ({
+      //   angleOffset: angleOffset * Math.abs(CENTER_X - mouseX) / CENTER_X
+      // })),
       render
     )
   );
 }, false);
-image.src = 'abandoned-acoustic-mirrors-denge.jpg'
+image.src = 'ad.jpg'
