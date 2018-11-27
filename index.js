@@ -7,6 +7,7 @@ const INNER_RADIUS = 100;
 const ANGLE_OFFSET = 5;
 const layerWidth = (OUTER_RADIUS - INNER_RADIUS) / NUM_LAYERS
 
+const flow = (...fns) => fns.reduceRight((f, g) => (...args) => f(g(...args)));
 
 const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
@@ -22,11 +23,8 @@ function animate(fn) {
   requestAnimationFrame(loop);
 }
 
-function render(t) {
+function render({angleOffset}) {
   ctx.drawImage(image, 0, 0);
-
-  let angleOffset = (1 * t / 1000) % 360;
-  // let angleOffset = 5;
 
   for (let i = 0; i < NUM_LAYERS; i++) {
     ctx.save();
@@ -44,6 +42,13 @@ function render(t) {
 image.addEventListener('load', () => {
   canvas.width = image.width;
   canvas.height = image.height;
-  animate(render);
-}, false)
+  animate(
+    flow(
+      t => ({
+        angleOffset: (1 * t / 1000) % 360
+      }),
+      render
+    )
+  );
+}, false);
 image.src = 'abandoned-acoustic-mirrors-denge.jpg'
