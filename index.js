@@ -16,7 +16,7 @@ const image = new Image();
 
 function animate(fn) {
   function loop(t) {
-    requestAnimationFrame(loop)
+    requestAnimationFrame(loop);
     fn(t);
   }
 
@@ -36,6 +36,25 @@ function mouseReactive(fn) {
     return {
       ...props,
       ...fn({mouseX, mouseY}, props)
+    }
+  }
+}
+
+function velocity() {
+  let currentValue = 0;
+  let endValue = 0;
+  const someSortOfSpeedVariable = 10;
+
+  setInterval(() => {
+    currentValue += (endValue - currentValue) / someSortOfSpeedVariable;
+  }, 15);
+
+  return function(props) {
+    endValue = props.angleOffset;
+
+    return {
+      ...props,
+      angleOffset: currentValue
     }
   }
 }
@@ -64,13 +83,15 @@ image.addEventListener('load', () => {
   animate(
     flow(
       t => ({
-        angleOffset: Math.sin(t / 30000 * Math.PI * 2),
+        angleOffset: 2 * Math.sin(t / 30000 * Math.PI * 2),
         centerX: CENTER_X,
         centerY: CENTER_Y,
       }),
-      // mouseReactive(({mouseX, mouseY}, {angleOffset}) => ({
-      //   angleOffset: angleOffset * Math.abs(CENTER_X - mouseX) / CENTER_X
-      // })),
+      mouseReactive(({mouseX, mouseY}, {angleOffset}) => ({
+        angleOffset: angleOffset * Math.abs(CENTER_X - mouseX) / CENTER_X
+      })),
+      velocity(),
+
       render
     )
   );
